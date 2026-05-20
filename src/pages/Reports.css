@@ -1,0 +1,72 @@
+.reports__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+
+.reports__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reports__table th {
+  font-size: var(--text-caption-size);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.reports__table td {
+  padding: 10px 0;
+  font-size: var(--text-body-size);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.reports__table tr:last-child td {
+  border-bottom: none;
+}
+
+.reports__count { font-weight: 600; }
+.reports__count--high {
+  color: var(--warning);
+  background: var(--warning-bg);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-small-size);
+}
+
+.reports__fast { color: var(--success); font-weight: 500; }
+.reports__slow { color: var(--error); font-weight: 500; }
+
+.reports__trend-up { color: var(--success); font-weight: 600; }
+.reports__trend-down { color: var(--error); font-weight: 600; }
+
+.reports__table-wrapper { overflow-x: auto; }
+
+.reports__table--distribution th,
+.reports__table--distribution td {
+  text-align: center;
+  padding: 8px 6px;
+}
+
+.reports__table--distribution td:first-child,
+.reports__table--distribution th:first-child {
+  text-align: left;
+}
+
+.reports__cell--pending { background: var(--status-pending-bg); color: #B45309; font-weight: 600; border-radius: 4px; }
+.reports__cell--assigned { background: var(--status-assigned-bg); color: var(--accent-primary); font-weight: 600; border-radius: 4px; }
+.reports__cell--progress { background: #EDE9FE; color: #7C3AED; font-weight: 600; border-radius: 4px; }
+.reports__cell--completed { background: var(--status-completed-bg); color: var(--success); font-weight: 600; border-radius: 4px; }
+.reports__cell--cancelled { background: var(--status-cancelled-bg); color: var(--error); font-weight: 600; border-radius: 4px; }
+
+@media (max-width: 1024px) {
+  .reports__grid {
+    grid-template-columns: 1fr;
+  }
+}

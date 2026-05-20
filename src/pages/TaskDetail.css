@@ -1,0 +1,260 @@
+.task-detail__not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-3xl);
+}
+
+.task-detail__topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.task-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-body-size);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.task-detail__back:hover {
+  color: var(--accent-primary);
+}
+
+.task-detail__topnav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.task-detail__task-id {
+  font-size: var(--text-small-size);
+  color: var(--text-muted);
+}
+
+/* ── Header ── */
+.task-detail__header {
+  margin-bottom: var(--space-xl);
+}
+
+.task-detail__badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.task-detail__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.task-detail__title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.task-detail__location {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-body-size);
+  color: var(--text-secondary);
+}
+
+.task-detail__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+/* ── Grid Layout ── */
+.task-detail__grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.task-detail__left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.task-detail__right {
+  position: sticky;
+  top: calc(var(--topbar-height) + var(--space-xl));
+}
+
+/* ── Assignment Details ── */
+.task-detail__card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  color: var(--text-primary);
+}
+
+.task-detail__card-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.task-detail__info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+}
+
+.task-detail__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-detail__info-label {
+  font-size: var(--text-caption-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.task-detail__info-value {
+  font-size: var(--text-body-size);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.task-detail__info-value--overdue {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.task-detail__assignee {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* ── Description ── */
+.task-detail__section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.task-detail__description {
+  font-size: var(--text-body-size);
+  color: var(--text-secondary);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+/* ── Agent Notes ── */
+.task-detail__add-note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-body-size);
+  font-weight: 500;
+  color: var(--accent-primary);
+  transition: color var(--transition-fast);
+}
+
+.task-detail__add-note-btn:hover {
+  color: var(--accent-hover);
+}
+
+.task-detail__notes-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.task-detail__note-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.task-detail__note-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+.task-detail__note-dot--system {
+  background: var(--text-muted);
+}
+
+.task-detail__note-time {
+  font-size: var(--text-small-size);
+  color: var(--text-muted);
+}
+
+.task-detail__note-text {
+  font-size: var(--text-body-size);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: var(--space-md);
+  background: var(--bg-tertiary);
+  border-left: 3px solid var(--border-default);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.task-detail__note-system-text {
+  font-size: var(--text-body-size);
+  color: var(--text-muted);
+  padding-left: var(--space-md);
+}
+
+.task-detail__no-insights {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .task-detail__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .task-detail__right {
+    position: static;
+  }
+
+  .task-detail__info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .task-detail__title-row {
+    flex-direction: column;
+  }
+
+  .task-detail__actions {
+    width: 100%;
+  }
+
+  .task-detail__info-grid {
+    grid-template-columns: 1fr;
+  }
+}

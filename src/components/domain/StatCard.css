@@ -1,0 +1,94 @@
+.stat-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Color variants — subtle top border */
+.stat-card--blue { border-top: 3px solid var(--accent-primary); }
+.stat-card--green { border-top: 3px solid var(--success); }
+.stat-card--red {
+  border-top: 3px solid var(--error);
+  background: #FFF5F5;
+}
+
+.stat-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-card__label {
+  font-size: var(--text-caption-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.stat-card__icon {
+  opacity: 0.6;
+}
+
+.stat-card--blue .stat-card__icon { color: var(--accent-primary); }
+.stat-card--green .stat-card__icon { color: var(--success); }
+.stat-card--red .stat-card__icon { color: var(--error); }
+
+.stat-card__value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.stat-card__unit {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.stat-card__subtitle {
+  font-size: var(--text-small-size);
+  color: var(--text-muted);
+}
+
+.stat-card--red .stat-card__subtitle {
+  color: var(--error);
+}
+
+.stat-card__trend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-small-size);
+  color: var(--success);
+  margin-top: var(--space-xs);
+}
+
+.stat-card__progress {
+  width: 100%;
+  height: 4px;
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-xs);
+}
+
+.stat-card__progress-bar {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease;
+  animation: progressFill 1s ease;
+}

@@ -1,0 +1,7 @@
+.risk-flag {
+  display: inline-flex;
+}
+
+.risk-flag--pulse {
+  animation: pulse 2s ease-in-out infinite;
+}

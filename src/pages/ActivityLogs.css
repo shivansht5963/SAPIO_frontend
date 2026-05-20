@@ -1,0 +1,110 @@
+.logs__filters {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+}
+
+.logs__filter {
+  flex: 1;
+  min-width: 150px;
+}
+
+.logs__filter-search {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.logs__filter-label {
+  font-size: var(--text-caption-size);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.logs__search-wrapper {
+  position: relative;
+}
+
+.logs__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.logs__search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  font-size: var(--text-body-size);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.logs__search-input::placeholder { color: var(--text-muted); }
+.logs__search-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+.logs__timestamp {
+  font-size: var(--text-small-size);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.logs__actor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.logs__action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.logs__action-badge {
+  font-size: 10px;
+}
+
+.logs__entity {
+  color: var(--accent-primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.logs__entity:hover {
+  text-decoration: underline;
+}
+
+.logs__ip {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: var(--text-small-size);
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+@media (max-width: 768px) {
+  .logs__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

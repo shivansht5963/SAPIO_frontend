@@ -1,0 +1,8 @@
+/* ═══════════════════════════════════════════════════════
+   FFMS — Master CSS Import File
+   ═══════════════════════════════════════════════════════ */
+
+@import './styles/variables.css';
+@import './styles/reset.css';
+@import './styles/global.css';
+@import './styles/animations.css';

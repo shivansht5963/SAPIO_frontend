@@ -1,0 +1,71 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-family);
+  font-weight: 500;
+  white-space: nowrap;
+  animation: badgePop 0.2s ease;
+}
+
+/* ── Sizes ── */
+.badge--sm {
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+.badge--md {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+/* ── Colors ── */
+.badge--green {
+  background: var(--status-completed-bg);
+  color: var(--status-completed);
+}
+
+.badge--amber {
+  background: var(--status-pending-bg);
+  color: #B45309;
+}
+
+.badge--red {
+  background: var(--status-cancelled-bg);
+  color: var(--status-cancelled);
+}
+
+.badge--blue {
+  background: var(--status-assigned-bg);
+  color: var(--accent-primary);
+}
+
+.badge--purple {
+  background: #EDE9FE;
+  color: #7C3AED;
+}
+
+.badge--gray {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.badge--cyan {
+  background: #CFFAFE;
+  color: #0891B2;
+}
+
+/* ── Dot indicator ── */
+.badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── Pulse animation ── */
+.badge--pulse {
+  animation: pulse 2s ease-in-out infinite;
+}

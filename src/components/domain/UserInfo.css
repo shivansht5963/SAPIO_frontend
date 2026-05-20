@@ -1,0 +1,30 @@
+.user-info {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.user-info__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-info__name {
+  font-size: var(--text-body-size);
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-info--sm .user-info__name {
+  font-size: var(--text-small-size);
+}
+
+.user-info__subtitle {
+  font-size: var(--text-small-size);
+  color: var(--text-muted);
+}

@@ -1,0 +1,61 @@
+.profile__card {
+  max-width: 600px;
+}
+
+.profile__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.profile__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.profile__name {
+  font-size: var(--text-h2-size);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.profile__id {
+  font-size: var(--text-small-size);
+  color: var(--text-muted);
+}
+
+.profile__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.profile__detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+}
+
+.profile__detail-label {
+  font-size: var(--text-body-size);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.profile__detail-value {
+  font-size: var(--text-body-size);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .profile__header {
+    flex-direction: column;
+    text-align: center;
+  }
+}
