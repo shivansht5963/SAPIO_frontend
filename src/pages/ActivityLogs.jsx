@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download, Calendar, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import Card from '../components/ui/Card';
 import Table from '../components/ui/Table';
@@ -146,9 +146,6 @@ export default function ActivityLogs() {
       <PageHeader
         title="Activity & Audit Logs"
         subtitle="System-wide chronological tracking of administrative and field events."
-        actions={
-          <Button variant="secondary" icon={Download}>Export CSV</Button>
-        }
       />
 
       {/* Filters */}

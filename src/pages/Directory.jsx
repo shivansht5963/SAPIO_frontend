@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MoreVertical, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import Card from '../components/ui/Card';
 import Table from '../components/ui/Table';
@@ -93,16 +93,6 @@ export default function Directory() {
       label: 'Username',
       width: '15%',
       render: (val) => <code className="directory__username">@{val}</code>,
-    },
-    {
-      key: 'id',
-      label: 'Actions',
-      width: '8%',
-      render: () => (
-        <button className="directory__actions-btn" aria-label="More actions">
-          <MoreVertical size={16} />
-        </button>
-      ),
     },
   ];
 

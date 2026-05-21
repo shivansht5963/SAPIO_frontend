@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, HelpCircle, Settings, LogOut, User, Menu } from 'lucide-react';
+import { Bell, LogOut, User, Menu } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { ROLE_LABELS } from '../../utils/constants';
 import Avatar from '../ui/Avatar';
 import Badge from '../ui/Badge';
 import './TopBar.css';
@@ -11,7 +10,6 @@ export default function TopBar({ onMenuClick }) {
   const { user, roleName, logout } = useAuth();
   const navigate = useNavigate();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -36,28 +34,14 @@ export default function TopBar({ onMenuClick }) {
         <button className="topbar__menu-btn" onClick={onMenuClick} aria-label="Toggle menu">
           <Menu size={20} />
         </button>
-        <div className="topbar__search">
-          <Search size={16} className="topbar__search-icon" />
-          <input
-            type="text"
-            className="topbar__search-input"
-            placeholder="Search across SAPIO..."
-            value={searchValue}
-            onChange={e => setSearchValue(e.target.value)}
-          />
+        <div className="topbar__brand-text">
+          <span className="topbar__page-context">{roleName || 'SAPIO'}</span>
         </div>
       </div>
 
       <div className="topbar__right">
-        <button className="topbar__icon-btn" aria-label="Notifications">
+        <button className="topbar__icon-btn" aria-label="Notifications" title="Notifications — coming soon">
           <Bell size={20} />
-          <span className="topbar__notification-badge">3</span>
-        </button>
-        <button className="topbar__icon-btn" aria-label="Help">
-          <HelpCircle size={20} />
-        </button>
-        <button className="topbar__icon-btn" aria-label="Settings">
-          <Settings size={20} />
         </button>
 
         {/* User menu */}
@@ -68,6 +52,7 @@ export default function TopBar({ onMenuClick }) {
             aria-label="User menu"
           >
             <Avatar name={user?.fullName || 'User'} size="sm" />
+            <span className="topbar__user-name">{user?.fullName || 'User'}</span>
           </button>
 
           {userMenuOpen && (

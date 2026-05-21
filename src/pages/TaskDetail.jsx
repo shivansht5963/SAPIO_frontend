@@ -10,7 +10,8 @@ import StatusBadge from '../components/domain/StatusBadge';
 import AiInsightsCard from '../components/domain/AiInsightsCard';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
-import { getTask, updateTask } from '../services/taskService';
+import { getTask, updateTask, assignTask } from '../services/taskService';
+import { getFieldAgents } from '../services/userService';
 import { startVisit, completeVisit } from '../services/visitService';
 import { formatDeadline, isOverdue, timeAgo } from '../utils/formatDate';
 import { TASK_PRIORITY, ROLES, TASK_STATUS_LABELS } from '../utils/constants';
@@ -35,6 +36,13 @@ export default function TaskDetail() {
   // Status change (Admin / RM / TL)
   const [newStatus, setNewStatus] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  // Reassign modal
+  const [showReassignModal, setShowReassignModal] = useState(false);
+  const [agents, setAgents] = useState([]);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState('');
+  const [reassigning, setReassigning] = useState(false);
 
   // Load task (visits are now nested in the task response)
   // `showSpinner` controls whether to flash the loading state (only for initial load)
@@ -139,6 +147,70 @@ export default function TaskDetail() {
     }
   }
 
+  // Share handler — Web Share API on mobile, clipboard on desktop
+  async function handleShare() {
+    if (!task) return;
+    const url = window.location.href;
+    const text = [
+      `📋 Task #${task.id}: ${task.title}`,
+      `Status: ${TASK_STATUS_LABELS[task.status] || task.status}`,
+      `Priority: ${task.priority}`,
+      task.assignedToName ? `Assigned to: ${task.assignedToName}` : 'Unassigned',
+      task.dueDate ? `Due: ${formatDeadline(task.dueDate)}` : '',
+      task.teamName ? `Team: ${task.teamName}` : '',
+      task.regionName ? `Region: ${task.regionName}` : '',
+      '',
+      url,
+    ].filter(Boolean).join('\n');
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Task #${task.id}: ${task.title}`, text, url });
+      } catch (err) {
+        if (err.name !== 'AbortError') showToast('Share cancelled.', 'error');
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Task details copied to clipboard!', 'success');
+      } catch {
+        showToast('Failed to copy to clipboard.', 'error');
+      }
+    }
+  }
+
+  // Reassign handler
+  function openReassignModal() {
+    setShowReassignModal(true);
+    setSelectedAgent('');
+    if (agents.length === 0) {
+      setAgentsLoading(true);
+      getFieldAgents()
+        .then(setAgents)
+        .catch(() => setAgents([]))
+        .finally(() => setAgentsLoading(false));
+    }
+  }
+
+  async function handleReassign() {
+    if (!selectedAgent || !task) return;
+    setReassigning(true);
+    try {
+      const updatedTask = await assignTask(task.id, selectedAgent);
+      if (updatedTask) setTask(updatedTask);
+      showToast('Task reassigned successfully!', 'success');
+      setShowReassignModal(false);
+      setSelectedAgent('');
+    } catch (err) {
+      const detail = err.response?.data?.detail
+        || err.response?.data?.assigned_to?.[0]
+        || 'Failed to reassign task.';
+      showToast(detail, 'error');
+    } finally {
+      setReassigning(false);
+    }
+  }
+
   // --- Render ---
 
   if (loading) {
@@ -186,7 +258,7 @@ export default function TaskDetail() {
         </button>
         <div className="task-detail__topnav-right">
           <span className="task-detail__task-id">Task ID: #{task.taskId || task.id}</span>
-          <Button variant="secondary" icon={Share2} size="sm">Share</Button>
+          <Button variant="secondary" icon={Share2} size="sm" onClick={handleShare}>Share</Button>
         </div>
       </div>
 
@@ -217,7 +289,9 @@ export default function TaskDetail() {
             )}
           </div>
           <div className="task-detail__actions">
-            <Button variant="secondary" icon={UserCheck}>Reassign</Button>
+            {canChangeStatus && (
+              <Button variant="secondary" icon={UserCheck} onClick={openReassignModal}>Reassign</Button>
+            )}
 
             {/* FIELD AGENT: Start Visit OR Complete Visit */}
             {isFieldAgent && taskIsActive && !activeVisit && (
@@ -432,6 +506,65 @@ export default function TaskDetail() {
                 disabled={!visitNotes.trim()}
               >
                 Complete & Analyze
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reassign Modal */}
+      {showReassignModal && (
+        <div className="task-detail__modal-overlay" onClick={() => setShowReassignModal(false)}>
+          <div className="task-detail__modal" onClick={e => e.stopPropagation()}>
+            <div className="task-detail__modal-header">
+              <h3>Reassign Task</h3>
+              <button
+                className="task-detail__modal-close"
+                onClick={() => setShowReassignModal(false)}
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="task-detail__modal-body">
+              <p className="task-detail__modal-desc">
+                Select a field agent to reassign this task to. The task's team and region scope will automatically update.
+              </p>
+              {task.assignedToName && (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+                  Currently assigned to: <strong>{task.assignedToName}</strong>
+                </p>
+              )}
+              <label className="task-detail__modal-label">Assign To *</label>
+              <select
+                className="task-detail__modal-select"
+                value={selectedAgent}
+                onChange={e => setSelectedAgent(e.target.value)}
+              >
+                <option value="">Select an agent...</option>
+                {agentsLoading ? (
+                  <option disabled>Loading agents...</option>
+                ) : agents.length === 0 ? (
+                  <option disabled>No agents available</option>
+                ) : (
+                  agents.map(agent => (
+                    <option key={agent.id} value={agent.id}>
+                      {agent.fullName} ({agent.employeeId}) — {agent.team || 'No team'}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            <div className="task-detail__modal-actions">
+              <Button variant="ghost" onClick={() => setShowReassignModal(false)}>Cancel</Button>
+              <Button
+                variant="primary"
+                icon={UserCheck}
+                onClick={handleReassign}
+                loading={reassigning}
+                disabled={!selectedAgent}
+              >
+                Reassign
               </Button>
             </div>
           </div>
