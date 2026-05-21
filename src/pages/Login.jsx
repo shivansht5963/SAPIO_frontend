@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Copy, Check, AlertCircle, X } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import './Login.css';
+
+const TEST_CREDENTIALS = [
+  { role: 'Admin', username: 'admin_user', password: 'admin123' },
+  { role: 'Agent', username: 'agent_ravi', password: 'pass123' },
+  { role: 'Team Lead', username: 'tl_alpha', password: 'pass123' },
+  { role: 'Regional Manager', username: 'rm_north', password: 'pass123' },
+];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,6 +20,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const [showCreds, setShowCreds] = useState(false);
+  const [copiedText, setCopiedText] = useState(null);
 
   // If already authenticated, redirect to dashboard
   if (isAuthenticated) {
@@ -43,11 +53,72 @@ export default function Login() {
     }
   }
 
+  function handleCopy(text) {
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(null), 2000);
+  }
+
   return (
     <div className="login">
       <div className="login__bg" />
-      <div className="login__card">
+      
+      {/* Floating Button to open credentials */}
+      {!showCreds && (
+        <button className="login__creds-toggle" onClick={() => setShowCreds(true)}>
+          <AlertCircle size={18} />
+          Test Credentials
+        </button>
+      )}
 
+      {/* Side Panel for Test Credentials */}
+      <div className={`login__creds-panel ${showCreds ? 'login__creds-panel--open' : ''}`}>
+        <div className="login__creds-header">
+          <h3>Test Credentials</h3>
+          <button onClick={() => setShowCreds(false)} className="login__creds-close">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="login__creds-content">
+          <p className="login__creds-desc">Use these demo credentials to test different roles.</p>
+          
+          {TEST_CREDENTIALS.map((cred) => (
+            <div key={cred.role} className="login__cred-card">
+              <h4 className="login__cred-role">{cred.role}</h4>
+              
+              <div className="login__cred-field">
+                <span className="login__cred-label">Username</span>
+                <div className="login__cred-value-wrapper">
+                  <code className="login__cred-value">{cred.username}</code>
+                  <button 
+                    className="login__cred-copy" 
+                    onClick={() => handleCopy(cred.username)}
+                    title="Copy username"
+                  >
+                    {copiedText === cred.username ? <Check size={14} color="var(--success, #10b981)" /> : <Copy size={14} />}
+                  </button>
+                </div>
+              </div>
+              
+              <div className="login__cred-field">
+                <span className="login__cred-label">Password</span>
+                <div className="login__cred-value-wrapper">
+                  <code className="login__cred-value">{cred.password}</code>
+                  <button 
+                    className="login__cred-copy" 
+                    onClick={() => handleCopy(cred.password)}
+                    title="Copy password"
+                  >
+                    {copiedText === cred.password ? <Check size={14} color="var(--success, #10b981)" /> : <Copy size={14} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="login__card">
         <h1 className="login__title">Welcome back</h1>
         <p className="login__subtitle">Sign in to your account</p>
 
@@ -100,10 +171,6 @@ export default function Login() {
             Sign In
           </Button>
         </form>
-
-        <p className="login__hint">
-          Try: <strong>admin_user</strong> / <strong>admin123</strong>, or <strong>agent_ravi</strong>, <strong>tl_alpha</strong>, <strong>rm_north</strong> (password: <strong>pass123</strong>)
-        </p>
 
         <p className="login__footer">Field Force Management System</p>
       </div>
