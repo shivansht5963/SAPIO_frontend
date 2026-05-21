@@ -27,15 +27,7 @@
   min-height: var(--topbar-height);
 }
 
-.sidebar__logo-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sidebar__logo svg {
   flex-shrink: 0;
 }
 

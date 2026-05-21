@@ -41,7 +41,7 @@ export default function TopBar({ onMenuClick }) {
           <input
             type="text"
             className="topbar__search-input"
-            placeholder="Search across FFMS..."
+            placeholder="Search across SAPIO..."
             value={searchValue}
             onChange={e => setSearchValue(e.target.value)}
           />

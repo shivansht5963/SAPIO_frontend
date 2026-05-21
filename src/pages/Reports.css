@@ -65,6 +65,18 @@
 .reports__cell--completed { background: var(--status-completed-bg); color: var(--success); font-weight: 600; border-radius: 4px; }
 .reports__cell--cancelled { background: var(--status-cancelled-bg); color: var(--error); font-weight: 600; border-radius: 4px; }
 
+.reports__empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 1.5rem 0 !important;
+  font-style: italic;
+}
+
+.reports__emp-id {
+  font-size: var(--text-caption-size);
+  color: var(--text-muted);
+}
+
 @media (max-width: 1024px) {
   .reports__grid {
     grid-template-columns: 1fr;

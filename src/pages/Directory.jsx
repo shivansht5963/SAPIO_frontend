@@ -1,83 +1,98 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MoreVertical, Search } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import Card from '../components/ui/Card';
 import Table from '../components/ui/Table';
+import Pagination from '../components/ui/Pagination';
 import Avatar from '../components/ui/Avatar';
 import Badge from '../components/ui/Badge';
 import Select from '../components/ui/Select';
-import mockUsers from '../data/mockUsers';
-import { ROLES } from '../utils/constants';
+import Spinner from '../components/ui/Spinner';
+import { getUsers } from '../services/userService';
+import { ROLE_LABELS } from '../utils/constants';
 import './Directory.css';
 
-const regionOptions = [
-  { value: '', label: 'All Regions' },
-  { value: 'North', label: 'North' },
-  { value: 'Northwest', label: 'Northwest' },
-  { value: 'South', label: 'South' },
-  { value: 'Southeast', label: 'Southeast' },
-  { value: 'West', label: 'West' },
-];
-
-const teamOptions = [
-  { value: '', label: 'All Teams' },
-  { value: 'Alpha Squad', label: 'Alpha Squad' },
-  { value: 'Bravo Team', label: 'Bravo Team' },
+const roleOptions = [
+  { value: '', label: 'All Roles' },
+  { value: 'field_agent', label: 'Field Agent' },
+  { value: 'team_lead', label: 'Team Lead' },
+  { value: 'regional_manager', label: 'Regional Manager' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'auditor', label: 'Auditor' },
 ];
 
 export default function Directory() {
-  const [regionFilter, setRegionFilter] = useState('');
-  const [teamFilter, setTeamFilter] = useState('');
+  const [users, setUsers] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
 
-  const agents = mockUsers.filter(u =>
-    u.role === ROLES.FIELD_AGENT || u.role === ROLES.TEAM_LEAD
-  );
+  useEffect(() => {
+    setLoading(true);
+    getUsers(page)
+      .then(data => {
+        setUsers(data.results || []);
+        setTotalCount(data.count || 0);
+        setTotalPages(data.totalPages || 1);
+      })
+      .catch(() => {
+        setUsers([]);
+        setTotalCount(0);
+      })
+      .finally(() => setLoading(false));
+  }, [page]);
 
-  const filtered = agents.filter(user => {
-    if (regionFilter && user.regionName !== regionFilter) return false;
-    if (teamFilter && user.teamName !== teamFilter) return false;
-    if (searchTerm && !user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+  // Client-side filtering on the current page results
+  const filtered = users.filter(user => {
+    if (roleFilter && user.role !== roleFilter) return false;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const match = (user.fullName || '').toLowerCase().includes(term)
+        || (user.username || '').toLowerCase().includes(term)
+        || (user.employeeId || '').toLowerCase().includes(term);
+      if (!match) return false;
+    }
     return true;
   });
 
   const columns = [
     {
       key: 'fullName',
-      label: 'Agent',
+      label: 'User',
       width: '25%',
       render: (val, row) => (
         <div className="directory__agent">
-          <Avatar name={val} size="md" />
+          <Avatar name={val || row.username} size="md" />
           <div className="directory__agent-info">
-            <span className="directory__agent-name">{val}</span>
-            <span className="directory__agent-id">ID: {row.employeeId}</span>
+            <span className="directory__agent-name">{val || row.username}</span>
+            <span className="directory__agent-id">{row.employeeId || `@${row.username}`}</span>
           </div>
         </div>
       ),
     },
     {
-      key: 'isActive',
-      label: 'Status',
-      width: '12%',
-      render: (val, row) => (
-        <Badge color="green" dot size="md">
-          {val ? 'Active' : 'Inactive'}
+      key: 'role',
+      label: 'Role',
+      width: '15%',
+      render: (val) => (
+        <Badge
+          color={val === 'admin' ? 'red' : val === 'field_agent' ? 'green' : val === 'team_lead' ? 'blue' : 'gray'}
+          size="sm"
+        >
+          {ROLE_LABELS[val] || val}
         </Badge>
       ),
     },
-    { key: 'regionName', label: 'Region', width: '15%' },
-    { key: 'teamName', label: 'Team', width: '15%' },
+    { key: 'team', label: 'Team', width: '15%', render: (val) => val || '—' },
+    { key: 'region', label: 'Region', width: '15%', render: (val) => val || '—' },
     {
-      key: 'email',
-      label: 'Contact',
-      width: '25%',
-      render: (val, row) => (
-        <div className="directory__contact">
-          <span className="directory__email">{val}</span>
-          <span className="directory__phone">{row.phone}</span>
-        </div>
-      ),
+      key: 'username',
+      label: 'Username',
+      width: '15%',
+      render: (val) => <code className="directory__username">@{val}</code>,
     },
     {
       key: 'id',
@@ -95,20 +110,14 @@ export default function Directory() {
     <div className="directory">
       <PageHeader
         title="Team Directory"
-        subtitle="Manage and monitor field agents across all regions."
+        subtitle="Manage and monitor team members across all regions."
         actions={
           <div className="directory__header-filters">
             <Select
-              options={regionOptions}
-              value={regionFilter}
-              onChange={setRegionFilter}
-              placeholder="All Regions"
-            />
-            <Select
-              options={teamOptions}
-              value={teamFilter}
-              onChange={setTeamFilter}
-              placeholder="All Teams"
+              options={roleOptions}
+              value={roleFilter}
+              onChange={(v) => { setRoleFilter(v); }}
+              placeholder="All Roles"
             />
           </div>
         }
@@ -120,14 +129,33 @@ export default function Directory() {
         <input
           type="text"
           className="directory__search-input"
-          placeholder="Search agents..."
+          placeholder="Search by name, username, or employee ID..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
       </div>
 
       <Card noPadding>
-        <Table columns={columns} data={filtered} />
+        {loading ? (
+          <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center' }}>
+            <Spinner size="md" />
+          </div>
+        ) : filtered.length > 0 ? (
+          <>
+            <Table columns={columns} data={filtered} />
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              pageSize={10}
+              onPageChange={setPage}
+            />
+          </>
+        ) : (
+          <p className="text-muted" style={{ padding: '2rem', textAlign: 'center' }}>
+            {users.length === 0 ? 'No users found.' : 'No users match your filters.'}
+          </p>
+        )}
       </Card>
     </div>
   );

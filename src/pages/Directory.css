@@ -87,3 +87,11 @@
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
+
+.directory__username {
+  font-size: var(--text-small-size);
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
