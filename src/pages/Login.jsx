@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Eye, EyeOff, Zap } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import './Login.css';
@@ -47,11 +47,7 @@ export default function Login() {
     <div className="login">
       <div className="login__bg" />
       <div className="login__card">
-        <div className="login__logo">
-          <div className="login__logo-icon">
-            <Zap size={28} />
-          </div>
-        </div>
+
         <h1 className="login__title">Welcome back</h1>
         <p className="login__subtitle">Sign in to your account</p>
 

@@ -35,7 +35,7 @@ export default function TopBar({ onMenuClick }) {
           <Menu size={20} />
         </button>
         <div className="topbar__brand-text">
-          <span className="topbar__page-context">{roleName || 'SAPIO'}</span>
+          <span className="topbar__page-context">{roleName || 'FFMS'}</span>
         </div>
       </div>
 

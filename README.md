@@ -1,16 +1,51 @@
-# React + Vite
+# Field Force Management System (FFMS) - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend application for the Field Force Management System (FFMS). It is a modern React application built with Vite.
 
-Currently, two official plugins are available:
+## Live Links
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend:** [https://sapio-frontend.vercel.app/](https://sapio-frontend.vercel.app/)
+- **Backend API:** [https://sapio.onrender.com](https://sapio.onrender.com)
 
-## React Compiler
+## Running Locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+To run the frontend application on your local machine, follow these steps:
 
-## Expanding the ESLint configuration
+### 1. Install Dependencies
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Make sure you have Node.js installed, then run:
+
+```bash
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file in the root directory and specify the backend API URL. 
+
+To connect to your local backend server, use:
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+*(If you want to connect to the live production backend instead, use `VITE_API_URL=https://sapio.onrender.com`)*
+
+### 3. Start the Development Server
+
+Start the Vite development server:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`.
+
+## Building for Production
+
+To create an optimized production build:
+
+```bash
+npm run build
+```
+
+This will generate a `dist` folder containing the compiled static assets ready for deployment.
