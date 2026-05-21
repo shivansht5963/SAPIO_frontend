@@ -6,7 +6,9 @@
  * Relative time string (e.g., "2 hours ago", "Just now")
  */
 export function timeAgo(dateString) {
+  if (!dateString) return '';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
 
@@ -26,7 +28,9 @@ export function timeAgo(dateString) {
  * Format: "May 20, 2026"
  */
 export function formatDate(dateString) {
+  if (!dateString) return 'N/A';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -38,7 +42,9 @@ export function formatDate(dateString) {
  * Format: "May 20, 2026 · 2:34 PM"
  */
 export function formatDateTime(dateString) {
+  if (!dateString) return 'N/A';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
   const dateStr = date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -56,7 +62,9 @@ export function formatDateTime(dateString) {
  * Format: "Oct 26, 2023 14:32:01"
  */
 export function formatTimestamp(dateString) {
+  if (!dateString) return 'N/A';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
   const dateStr = date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -75,7 +83,9 @@ export function formatTimestamp(dateString) {
  * Format: "Today, 14:00" or "Tomorrow, 09:00" or date
  */
 export function formatDeadline(dateString) {
+  if (!dateString) return 'No deadline';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Invalid date';
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
@@ -98,13 +108,17 @@ export function formatDeadline(dateString) {
  * Check if a date is overdue (in the past)
  */
 export function isOverdue(dateString) {
-  return new Date(dateString) < new Date();
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return false;
+  return date < new Date();
 }
 
 /**
  * Calculate duration between two dates in human-readable format
  */
 export function formatDuration(startDate, endDate) {
+  if (!startDate || !endDate) return 'N/A';
   const start = new Date(startDate);
   const end = new Date(endDate);
   const diffMs = end - start;

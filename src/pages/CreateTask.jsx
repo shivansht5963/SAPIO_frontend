@@ -1,18 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
-import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
-import Select from '../components/ui/Select';
 import Button from '../components/ui/Button';
 import { useToast } from '../hooks/useToast';
-import { getAgents } from '../data/mockUsers';
+import { createTask } from '../services/taskService';
+import { getFieldAgents } from '../services/userService';
 import './CreateTask.css';
 
 export default function CreateTask() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const agents = getAgents();
 
   const [form, setForm] = useState({
     title: '',
@@ -22,11 +20,19 @@ export default function CreateTask() {
     assignTo: '',
   });
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const assignOptions = [
-    { value: '', label: 'Unassigned (Pool Queue)' },
-    ...agents.map(a => ({ value: String(a.id), label: a.fullName })),
-  ];
+  // Field agents for assignment dropdown
+  const [agents, setAgents] = useState([]);
+  const [agentsLoading, setAgentsLoading] = useState(true);
+
+  useEffect(() => {
+    setAgentsLoading(true);
+    getFieldAgents()
+      .then(setAgents)
+      .catch(() => setAgents([]))
+      .finally(() => setAgentsLoading(false));
+  }, []);
 
   function validate() {
     const errs = {};
@@ -36,15 +42,53 @@ export default function CreateTask() {
     return errs;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
-    showToast('Task created successfully!', 'success');
-    navigate('/tasks');
+
+    setSubmitting(true);
+    setErrors({});
+
+    try {
+      const newTask = await createTask({
+        title: form.title.trim(),
+        description: form.description.trim(),
+        priority: form.priority,
+        dueDate: form.dueDate,
+        assignedTo: form.assignTo || null,
+      });
+      showToast('Task created successfully!', 'success');
+      navigate(`/tasks/${newTask.id}`);
+    } catch (err) {
+      const data = err.response?.data;
+
+      if (err.response?.status === 400 && data) {
+        const fieldErrors = {};
+        if (data.title) fieldErrors.title = Array.isArray(data.title) ? data.title[0] : data.title;
+        if (data.description) fieldErrors.description = Array.isArray(data.description) ? data.description[0] : data.description;
+        if (data.due_date) fieldErrors.dueDate = Array.isArray(data.due_date) ? data.due_date[0] : data.due_date;
+        if (data.priority) fieldErrors.priority = Array.isArray(data.priority) ? data.priority[0] : data.priority;
+        if (data.assigned_to) fieldErrors.assignTo = Array.isArray(data.assigned_to) ? data.assigned_to[0] : data.assigned_to;
+        if (data.detail) fieldErrors._general = data.detail;
+        if (data.non_field_errors) fieldErrors._general = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors(fieldErrors);
+        } else {
+          showToast('Validation error. Please check your inputs.', 'error');
+        }
+      } else if (err.response?.status === 403) {
+        showToast('You do not have permission to create tasks.', 'error');
+      } else {
+        showToast('Failed to create task. Please try again.', 'error');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -56,6 +100,20 @@ export default function CreateTask() {
         </div>
 
         <form onSubmit={handleSubmit} className="create-task__form">
+          {errors._general && (
+            <div className="create-task__error-banner" style={{
+              padding: '0.75rem 1rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+              color: '#ef4444',
+              marginBottom: '1rem',
+              fontSize: '0.875rem',
+            }}>
+              {errors._general}
+            </div>
+          )}
+
           <Input
             label="Task Title"
             placeholder="e.g., Routine Maintenance - Sector 7G"
@@ -105,25 +163,44 @@ export default function CreateTask() {
                   </button>
                 ))}
               </div>
+              {errors.priority && <p className="create-task__error">{errors.priority}</p>}
             </div>
           </div>
 
-          <Select
-            label="Assign To"
-            options={assignOptions}
-            value={form.assignTo}
-            onChange={v => setForm({ ...form, assignTo: v })}
-            placeholder="Unassigned (Pool Queue)"
-          />
-          <p className="create-task__helper">
-            Leaving this blank adds the task to the general dispatch queue.
-          </p>
+          {/* Agent Assignment Dropdown */}
+          <div className="create-task__field">
+            <label className="create-task__label">Assign To</label>
+            <select
+              className={`create-task__select ${errors.assignTo ? 'create-task__select--error' : ''}`}
+              value={form.assignTo}
+              onChange={e => setForm({ ...form, assignTo: e.target.value })}
+            >
+              <option value="">Unassigned — goes to dispatch queue</option>
+              {agentsLoading ? (
+                <option disabled>Loading agents...</option>
+              ) : agents.length === 0 ? (
+                <option disabled>No agents available</option>
+              ) : (
+                agents.map(agent => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.fullName} ({agent.employeeId}) — {agent.team || 'No team'}
+                  </option>
+                ))
+              )}
+            </select>
+            {errors.assignTo && <p className="create-task__error">{errors.assignTo}</p>}
+            <p className="create-task__helper">
+              Select a field agent to assign, or leave as unassigned for the general dispatch queue.
+            </p>
+          </div>
 
           <div className="create-task__divider" />
 
           <div className="create-task__actions">
             <Button variant="ghost" onClick={() => navigate('/tasks')}>Cancel</Button>
-            <Button variant="primary" icon={Check} type="submit">Create Task</Button>
+            <Button variant="primary" icon={Check} type="submit" loading={submitting}>
+              Create Task
+            </Button>
           </div>
         </form>
       </div>

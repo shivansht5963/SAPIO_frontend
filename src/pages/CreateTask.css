@@ -138,6 +138,30 @@
   margin-top: -8px;
 }
 
+.create-task__select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: var(--text-body-size);
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  appearance: auto;
+}
+
+.create-task__select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+.create-task__select--error {
+  border-color: var(--error);
+}
+
 .create-task__divider {
   height: 1px;
   background: var(--border-subtle);
