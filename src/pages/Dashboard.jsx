@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
@@ -7,76 +8,73 @@ import Card from '../components/ui/Card';
 import Table from '../components/ui/Table';
 import Avatar from '../components/ui/Avatar';
 import Button from '../components/ui/Button';
+import Spinner from '../components/ui/Spinner';
 import { timeAgo } from '../utils/formatDate';
 import { useAuth } from '../hooks/useAuth';
-import mockTasks from '../data/mockTasks';
-import mockLogs from '../data/mockLogs';
-import mockUsers from '../data/mockUsers';
-import { ROLES, TASK_STATUS, TASK_PRIORITY } from '../utils/constants';
+import { apiGet } from '../services/api';
 import './Dashboard.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, role } = useAuth();
 
-  // Dynamically filter data based on user role
-  let visibleTasks = mockTasks;
-  let visibleLogs = mockLogs;
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  if (role === ROLES.FIELD_AGENT) {
-    visibleTasks = mockTasks.filter(t => t.assignedTo === user.id);
-    visibleLogs = mockLogs.filter(l => l.userId === user.id);
-  } else if (role === ROLES.TEAM_LEAD) {
-    visibleTasks = mockTasks.filter(t => t.teamScope === user.team);
-    visibleLogs = mockLogs.filter(l => {
-      const actor = mockUsers.find(u => u.id === l.userId);
-      return actor && actor.team === user.team;
-    });
-  } else if (role === ROLES.REGIONAL_MANAGER) {
-    visibleTasks = mockTasks.filter(t => t.regionScope === user.region);
-    visibleLogs = mockLogs.filter(l => {
-      const actor = mockUsers.find(u => u.id === l.userId);
-      return actor && actor.region === user.region;
-    });
+  useEffect(() => {
+    setLoading(true);
+    apiGet('/reports/dashboard/')
+      .then(({ data }) => setDashboard(data))
+      .catch(() => setDashboard(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ padding: '4rem', display: 'flex', justifyContent: 'center' }}>
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
-  const activeTasks = visibleTasks.filter(t => t.status !== TASK_STATUS.COMPLETED && t.status !== TASK_STATUS.CANCELLED);
-  const completedTasks = visibleTasks.filter(t => t.status === TASK_STATUS.COMPLETED);
-  const highRiskFlags = visibleTasks.filter(t => t.priority === TASK_PRIORITY.HIGH);
-  
-  const completionRate = visibleTasks.length > 0 
-    ? Math.round((completedTasks.length / visibleTasks.length) * 100) 
-    : 0;
+  if (!dashboard) {
+    return (
+      <div className="dashboard">
+        <PageHeader title="Overview" subtitle="Real-time status of field operations across all sectors." />
+        <Card><p className="text-muted" style={{ padding: '2rem', textAlign: 'center' }}>Failed to load dashboard data.</p></Card>
+      </div>
+    );
+  }
 
-  const stats = {
-    activeTasks: {
-      value: activeTasks.length,
-      trend: '+5%',
-      trendLabel: 'from last week',
-    },
-    techniciansAvailable: {
-      value: role === ROLES.FIELD_AGENT ? 1 : mockUsers.filter(u => u.role === ROLES.FIELD_AGENT).length,
-      subtitle: role === ROLES.FIELD_AGENT ? 'You are active' : 'Out of total agents',
-    },
-    completionRate: {
-      value: completionRate,
-      unit: '%',
-    },
-    highRiskFlags: {
-      value: highRiskFlags.length,
-      subtitle: 'Requires attention',
-    },
-  };
+  const tasks = dashboard.tasks || {};
+  const byStatus = tasks.by_status || {};
+  const visits = dashboard.visits || {};
+  const recentActivity = dashboard.recent_activity || [];
 
-  const criticalTasks = activeTasks
-    .filter(t => t.priority === TASK_PRIORITY.HIGH)
-    .slice(0, 4);
+  const totalTasks = tasks.total || 0;
+  const activeTasks = totalTasks - (byStatus.completed || 0) - (byStatus.cancelled || 0);
+  const completedCount = byStatus.completed || 0;
+  const completionRate = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
+  const highRiskVisits = visits.high_risk || 0;
 
-  const recentActivity = visibleLogs.slice(0, 5).map(l => ({
-    id: l.id,
-    user: l.userName,
-    action: l.description,
-    timestamp: l.timestamp,
+  // Build critical tasks from recent activity (tasks that are in_progress or assigned)
+  const taskActivity = recentActivity
+    .filter(a => a.entity_type === 'task')
+    .slice(0, 4)
+    .map(a => ({
+      id: a.entity_id,
+      taskId: a.entity_id,
+      title: a.description || '',
+      assignee: a.user_profile?.username || 'Unknown',
+      status: a.action === 'completed' ? 'completed' : a.action === 'created' ? 'pending' : 'in_progress',
+    }));
+
+  // Map recent activity for display
+  const activityItems = recentActivity.slice(0, 6).map(a => ({
+    id: a.id,
+    user: a.user_profile?.username || a.user_profile?.first_name || 'System',
+    action: a.description || `${a.action} ${a.entity_type} #${a.entity_id}`,
+    timestamp: a.timestamp,
   }));
 
   const taskColumns = [
@@ -105,28 +103,28 @@ export default function Dashboard() {
       <div className="dashboard__stats">
         <StatCard
           label="Active Tasks"
-          value={stats.activeTasks.value}
-          trend={stats.activeTasks.trend}
-          trendLabel={stats.activeTasks.trendLabel}
+          value={activeTasks}
+          trend={`${totalTasks} total`}
+          trendLabel="in system"
           type="tasks"
         />
         <StatCard
-          label="Technicians Available"
-          value={stats.techniciansAvailable.value}
-          subtitle={stats.techniciansAvailable.subtitle}
+          label="Visits Completed"
+          value={visits.completed || 0}
+          subtitle={`${visits.total || 0} total visits`}
           type="technicians"
         />
         <StatCard
           label="Completion Rate"
-          value={stats.completionRate.value}
+          value={completionRate}
           unit="%"
           progressBar
           type="completion"
         />
         <StatCard
           label="High-Risk Flags"
-          value={stats.highRiskFlags.value}
-          subtitle={stats.highRiskFlags.subtitle}
+          value={highRiskVisits}
+          subtitle="Requires attention"
           type="risk"
         />
       </div>
@@ -135,7 +133,7 @@ export default function Dashboard() {
       <div className="dashboard__grid">
         {/* Critical Active Tasks */}
         <Card
-          title="Critical Active Tasks"
+          title="Recent Task Activity"
           headerAction={
             <button className="dashboard__view-all" onClick={() => navigate('/tasks')}>
               View All
@@ -144,11 +142,15 @@ export default function Dashboard() {
           noPadding
           className="dashboard__tasks-card"
         >
-          <Table
-            columns={taskColumns}
-            data={criticalTasks}
-            onRowClick={(row) => navigate(`/tasks/${row.id}`)}
-          />
+          {taskActivity.length > 0 ? (
+            <Table
+              columns={taskColumns}
+              data={taskActivity}
+              onRowClick={(row) => navigate(`/tasks/${row.id}`)}
+            />
+          ) : (
+            <p className="text-muted" style={{ padding: '2rem', textAlign: 'center' }}>No recent task activity.</p>
+          )}
         </Card>
 
         {/* Fleet Locations (placeholder) */}
@@ -170,11 +172,11 @@ export default function Dashboard() {
       {/* Recent Activity */}
       <Card title="Recent Activity" className="dashboard__activity-card">
         <div className="dashboard__activity-list">
-          {recentActivity.map((item, idx) => (
+          {activityItems.length > 0 ? activityItems.map((item, idx) => (
             <div key={item.id} className="dashboard__activity-item">
               <div className="dashboard__activity-line">
                 <div className="dashboard__activity-dot" />
-                {idx < recentActivity.length - 1 && <div className="dashboard__activity-connector" />}
+                {idx < activityItems.length - 1 && <div className="dashboard__activity-connector" />}
               </div>
               <Avatar name={item.user} size="sm" />
               <div className="dashboard__activity-content">
@@ -184,7 +186,9 @@ export default function Dashboard() {
                 <span className="dashboard__activity-time">{timeAgo(item.timestamp)}</span>
               </div>
             </div>
-          ))}
+          )) : (
+            <p className="text-muted" style={{ textAlign: 'center', padding: '1rem' }}>No recent activity.</p>
+          )}
         </div>
       </Card>
     </div>

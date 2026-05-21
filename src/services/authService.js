@@ -17,9 +17,11 @@ export function normalizeUser(data) {
   // Role can be nested in profile or flat on user
   const role = profile.role?.name || profile.role || user.role || '';
 
-  // Team/region come as strings from the API
-  const team = profile.team || user.team || null;
-  const region = profile.region || user.region || null;
+  // Team/region can be strings OR objects like { id, name }
+  const rawTeam = profile.team || user.team || null;
+  const rawRegion = profile.region || user.region || null;
+  const team = rawTeam && typeof rawTeam === 'object' ? rawTeam.name : rawTeam;
+  const region = rawRegion && typeof rawRegion === 'object' ? rawRegion.name : rawRegion;
 
   return {
     id: user.id,
@@ -58,12 +60,27 @@ export async function login(username, password) {
 
 /**
  * Fetch current user profile (used to rehydrate auth on page reload).
+ * Falls back to cached data if normalization fails.
  */
 export async function fetchMe() {
   const { data } = await apiGet('/auth/me/');
-  const user = normalizeUser(data);
-  localStorage.setItem('user_data', JSON.stringify(user));
-  return user;
+  try {
+    const user = normalizeUser(data);
+    if (!user || !user.id) {
+      console.warn('[authService] normalizeUser returned invalid data:', data);
+      // Fall back to cached data
+      const cached = getCachedUser();
+      if (cached) return cached;
+      throw new Error('Invalid user data from /auth/me/');
+    }
+    localStorage.setItem('user_data', JSON.stringify(user));
+    return user;
+  } catch (err) {
+    console.warn('[authService] fetchMe normalization error:', err, 'Raw data:', data);
+    const cached = getCachedUser();
+    if (cached) return cached;
+    throw err;
+  }
 }
 
 /**
