@@ -1,45 +1,64 @@
-import { createContext, useState, useCallback } from 'react';
-import mockUsers from '../data/mockUsers';
-import { ROLES, ROLE_LABELS } from '../utils/constants';
+import { createContext, useState, useCallback, useEffect } from 'react';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  fetchMe,
+  getCachedUser,
+} from '../services/authService';
+import { getAccessToken } from '../services/api';
+import { ROLE_LABELS } from '../utils/constants';
 
 export const AuthContext = createContext(null);
 
-const DEFAULT_USER = mockUsers[0]; // Admin by default
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(DEFAULT_USER);
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Auto-logged in for dev
+  const [user, setUser] = useState(() => getCachedUser());
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!getAccessToken());
+  const [loading, setLoading] = useState(() => !!getAccessToken()); // Loading only if we have a token to verify
 
-  const login = useCallback((username, password) => {
-    const found = mockUsers.find(u => u.username === username);
-    if (found) {
-      setUser(found);
-      setIsAuthenticated(true);
-      return { success: true, user: found };
+  // Rehydrate user on mount if token exists
+  useEffect(() => {
+    if (!getAccessToken()) {
+      setLoading(false);
+      return;
     }
-    return { success: false, error: 'Invalid credentials' };
+
+    fetchMe()
+      .then((userData) => {
+        setUser(userData);
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        // Token invalid or expired and refresh failed
+        setUser(null);
+        setIsAuthenticated(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const login = useCallback(async (username, password) => {
+    const userData = await apiLogin(username, password);
+    setUser(userData);
+    setIsAuthenticated(true);
+    return userData;
   }, []);
 
   const logout = useCallback(() => {
+    apiLogout();
     setUser(null);
     setIsAuthenticated(false);
-  }, []);
-
-  const switchRole = useCallback((role) => {
-    const found = mockUsers.find(u => u.role === role);
-    if (found) {
-      setUser(found);
-    }
   }, []);
 
   const value = {
     user,
     isAuthenticated,
+    loading,
     login,
     logout,
-    switchRole,
-    role: user?.role,
-    roleName: user ? ROLE_LABELS[user.role] : '',
+    role: user?.role || '',
+    roleName: user?.role ? (ROLE_LABELS[user.role] || user.role) : '',
+    permissions: user?.permissions || [],
   };
 
   return (

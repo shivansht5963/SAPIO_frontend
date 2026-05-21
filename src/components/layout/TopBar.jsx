@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, HelpCircle, Settings, ChevronDown, LogOut, User, Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Bell, HelpCircle, Settings, LogOut, User, Menu } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { ROLES, ROLE_LABELS } from '../../utils/constants';
+import { ROLE_LABELS } from '../../utils/constants';
 import Avatar from '../ui/Avatar';
 import Badge from '../ui/Badge';
 import './TopBar.css';
 
 export default function TopBar({ onMenuClick }) {
-  const { user, roleName, switchRole, logout } = useAuth();
+  const { user, roleName, logout } = useAuth();
+  const navigate = useNavigate();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const menuRef = useRef(null);
@@ -21,6 +23,12 @@ export default function TopBar({ onMenuClick }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  function handleLogout() {
+    logout();
+    navigate('/login');
+    setUserMenuOpen(false);
+  }
 
   return (
     <header className="topbar">
@@ -73,21 +81,16 @@ export default function TopBar({ onMenuClick }) {
               </div>
               <div className="topbar__dropdown-divider" />
 
-              {/* Role Switcher (dev tool) */}
-              <p className="topbar__dropdown-section-label">Switch Role (Dev)</p>
-              {Object.values(ROLES).map(r => (
-                <button
-                  key={r}
-                  className={`topbar__dropdown-item ${user?.role === r ? 'topbar__dropdown-item--active' : ''}`}
-                  onClick={() => { switchRole(r); setUserMenuOpen(false); }}
-                >
-                  <User size={14} />
-                  {ROLE_LABELS[r]}
-                </button>
-              ))}
+              <button
+                className="topbar__dropdown-item"
+                onClick={() => { navigate('/profile'); setUserMenuOpen(false); }}
+              >
+                <User size={14} />
+                My Profile
+              </button>
 
               <div className="topbar__dropdown-divider" />
-              <button className="topbar__dropdown-item topbar__dropdown-item--danger" onClick={logout}>
+              <button className="topbar__dropdown-item topbar__dropdown-item--danger" onClick={handleLogout}>
                 <LogOut size={14} />
                 Sign Out
               </button>

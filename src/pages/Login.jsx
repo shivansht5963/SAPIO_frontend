@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Eye, EyeOff, Zap } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
@@ -7,26 +7,38 @@ import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // If already authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const result = login(username, password);
-    if (result.success) {
+    try {
+      await login(username, password);
       navigate('/dashboard');
-    } else {
-      setError('Invalid username or password. Please try again.');
+    } catch (err) {
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail;
+
+      if (status === 401 || status === 400) {
+        setError(detail || 'Invalid username or password. Please try again.');
+      } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+        setError('Unable to reach server. Please check your connection and try again.');
+      } else {
+        setError(detail || 'Something went wrong. Please try again.');
+      }
+    } finally {
       setLoading(false);
     }
   }
@@ -94,7 +106,7 @@ export default function Login() {
         </form>
 
         <p className="login__hint">
-          Try: <strong>admin</strong> / any password, or <strong>agent_ravi</strong>, <strong>tl_alpha</strong>, <strong>rm_north</strong>, <strong>auditor_priya</strong>
+          Try: <strong>admin_user</strong> / <strong>admin123</strong>, or <strong>agent_ravi</strong>, <strong>tl_alpha</strong>, <strong>rm_north</strong> (password: <strong>pass123</strong>)
         </p>
 
         <p className="login__footer">Field Force Management System</p>

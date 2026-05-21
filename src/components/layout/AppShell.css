@@ -1,3 +1,11 @@
+.app-shell__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--bg-primary);
+}
+
 .app-shell {
   display: flex;
   min-height: 100vh;
