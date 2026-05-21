@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import StatCard from '../components/domain/StatCard';
 import StatusBadge from '../components/domain/StatusBadge';
@@ -94,9 +93,6 @@ export default function Dashboard() {
       <PageHeader
         title="Overview"
         subtitle="Real-time status of field operations across all sectors."
-        actions={
-          <Button variant="secondary" icon={Download}>Export Report</Button>
-        }
       />
 
       {/* Stat Cards */}
